@@ -10,20 +10,36 @@ require_post = http.require_POST
 require_get = http.require_GET
 
 
-def require_params(need_params, decode=True):
+def require_get_params(r_params):
+    """
+    需要获取的参数是否在request.GET中存在
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            for require_param in r_params:
+                if require_param not in request.GET:
+                    return error_response(Error.REQUIRE_PARAM, append_msg=require_param)
+            return func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def require_params(r_params, decode=True):
     """
     需要获取的参数是否在request.POST中存在
     """
     def decorator(func):
+        @wraps(func)
         def wrapper(request, *args, **kwargs):
-            for need_param in need_params:
-                if need_param in request.POST:
+            for r_param in r_params:
+                if r_param in request.POST:
                     if decode:
-                        x = request.POST[need_param]
+                        x = request.POST[r_param]
                         c = base64.decodebytes(bytes(x, encoding='utf8')).decode()
-                        request.POST[need_param] = c
+                        request.POST[r_param] = c
                 else:
-                    return error_response(Error.REQUIRE_PARAM, append_msg=need_param)
+                    return error_response(Error.REQUIRE_PARAM, append_msg=r_param)
             return func(request, *args, **kwargs)
         return wrapper
     return decorator
@@ -50,6 +66,7 @@ def logging(func):
         rtn = func(request, *args, **kwargs)
         deprint('END --', func.__name__)
         return rtn
+    return wrapper
 
 
 def decorator_generator(verify_func, error_id):

@@ -6,14 +6,16 @@ from Base.common import deprint
 from Base.decorator import logging
 from Settings.models import Settings
 
-client_id = Settings.objects.get('unsplash-client-id')
-secret = Settings.objects.get('unsplash-secret')
-redirect_uri = Settings.objects.get('unsplash-redirect-uri')
+client_id = Settings.objects.get(key='unsplash-client-id').value
+secret = Settings.objects.get(key='unsplash-secret').value
+redirect_uri = Settings.objects.get(key='unsplash-redirect-uri').value
 
-host = 'https://api.unsplash.com'
+host = 'https://unsplash.com'
+api_host = "https://api.unsplash.com"
 authorize_url = host + '/oauth/authorize'
 token_url = host + '/oauth/token'
-user_profile_url = host + '/me'
+user_profile_url = api_host + '/me'
+random_photo_url = api_host + '/photos/random'
 
 
 @logging
@@ -23,20 +25,22 @@ def oauth_link():
 
 
 @logging
-def get_access_token(token):
+def get_access_token(code):
     params = {
         'client_id': client_id,
         'client_secret': secret,
         'redirect_uri': redirect_uri,
-        'code': token,
+        'code': code,
         'grant_type': 'authorization_code',
     }
 
     try:
-        response = requests.post(token_url, json=params)
-        if response.status_code == 200:
-            deprint('CONTENT -- ', response.content)
-            return response.json()
+        resp = requests.post(token_url, json=params)
+        deprint('status_code', resp.status_code)
+        deprint('token_url', token_url)
+        if resp.status_code == 200:
+            deprint('CONTENT -- ', resp.content)
+            return resp.json()['access_token']
     except:
         return None
 
@@ -50,9 +54,32 @@ def get_user_profile(access_token):
     headers = {'content-type': 'application/json'}
 
     try:
-        response = requests.get(user_profile_url, params=params_encoded, headers=headers)
-        if response.status_code == 200:
-            deprint('CONTENT -- ', response.content)
-            return response.json()
+        resp = requests.get(user_profile_url, params=params_encoded, headers=headers)
+        if resp.status_code == 200:
+            deprint('CONTENT -- ', resp.content)
+            return resp.json()
+        else:
+            deprint('STATUS-CODE -- ', resp.status_code)
+            return None
+    except:
+        return None
+
+
+@logging
+def get_random_photo(access_token):
+    params = {
+        'access_token': access_token,
+    }
+    params_encoded = urlencode(params)
+    headers = {'content-type': 'application/json'}
+
+    try:
+        resp = requests.get(random_photo_url, params=params_encoded, headers=headers)
+        if resp.status_code == 200:
+            deprint('CONTENT -- ', resp.content)
+            return resp.json()
+        else:
+            deprint('STATUS-CODE -- ', resp.status_code)
+            return None
     except:
         return None

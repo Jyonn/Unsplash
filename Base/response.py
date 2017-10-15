@@ -5,6 +5,15 @@ from django.http import HttpResponse
 from Base.error import Error
 
 
+class Ret:
+    """
+    函数返回类
+    """
+    def __init__(self, error=Error.OK, body=None):
+        self.error = error
+        self.body = body or []
+
+
 def response(code=0, msg="ok", body=None):
     resp = {
         "code": code,
