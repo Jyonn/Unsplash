@@ -6,9 +6,14 @@ from Base.common import deprint
 from Base.decorator import logging
 from Settings.models import Settings
 
-client_id = Settings.objects.get(key='unsplash-client-id').value
-secret = Settings.objects.get(key='unsplash-secret').value
-redirect_uri = Settings.objects.get(key='unsplash-redirect-uri').value
+try:
+    client_id = Settings.objects.get(key='unsplash-client-id').value
+    secret = Settings.objects.get(key='unsplash-secret').value
+    redirect_uri = Settings.objects.get(key='unsplash-redirect-uri').value
+except:
+    client_id = 'YOUR CLIENT ID'
+    secret = 'YOUR SECRET'
+    redirect_uri = 'YOUR REDIRECT URI'
 
 host = 'https://unsplash.com'
 api_host = "https://api.unsplash.com"
