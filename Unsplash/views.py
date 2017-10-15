@@ -1,4 +1,6 @@
-from Base.api import get_access_token, get_random_photo
+from django.http import HttpResponseRedirect
+
+from Base.api import get_access_token, get_random_photo, get_oauth_link
 from Base.common import deprint
 from Base.decorator import logging, require_get_params
 from Base.error import Error
@@ -17,7 +19,7 @@ def auth_callback(request):
     rtn = User.create(access_token)
     if rtn.error is not Error.OK:
         return error_response(rtn.error)
-    return response()
+    return HttpResponseRedirect('/random')
 
 
 @logging
@@ -37,3 +39,10 @@ def random(request):
                     urls=rtn['urls'],
                 ))
     return error_response(Error.NO_LEGAL_USER)
+
+
+# @logging
+def oauth(request):
+    oauth_link = get_oauth_link()
+    deprint(oauth_link)
+    return HttpResponseRedirect(oauth_link)

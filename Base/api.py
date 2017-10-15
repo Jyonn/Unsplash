@@ -24,7 +24,7 @@ random_photo_url = api_host + '/photos/random'
 
 
 @logging
-def oauth_link():
+def get_oauth_link():
     return '%s?client_id=%s&redirect_uri=%s&response_type=code&scope=public+read_user' \
            % (authorize_url, client_id, redirect_uri)
 

@@ -61,9 +61,9 @@ def require_json(func):
 
 def logging(func):
     @wraps(func)
-    def wrapper(request, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         deprint('BGN -- ', func.__name__)
-        rtn = func(request, *args, **kwargs)
+        rtn = func(*args, **kwargs)
         deprint('END --', func.__name__)
         return rtn
     return wrapper

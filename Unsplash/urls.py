@@ -16,10 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from Unsplash.views import auth_callback, random
+from Unsplash.views import auth_callback, random, oauth
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^auth/callback', auth_callback),
-    url(r'^random', random),
+    # url(r'^admin/', admin.site.urls),
+    url(r'^auth/callback$', auth_callback),
+    url(r'^random$', random),
+    url(r'^$', oauth),
 ]
