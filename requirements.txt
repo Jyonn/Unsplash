@@ -1,0 +1,2 @@
+requests
+django>=2.0
