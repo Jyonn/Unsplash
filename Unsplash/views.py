@@ -2,16 +2,16 @@ from django.http import HttpResponseRedirect
 
 from Base.api import get_access_token, get_random_photo, get_oauth_link
 from Base.common import deprint
-from Base.decorator import logging, require_get_params
+from Base.decorator import require_get
 from Base.error import Error
-from Base.response import error_response, response
+from Base.response import error_response
+from Photo.models import Photo
 from User.models import User
 
 
-@logging
-@require_get_params(['code'])
+@require_get(['code'])
 def auth_callback(request):
-    code = request.GET['code']
+    code = request.d.code
     deprint('CODE -- ', code)
     access_token = get_access_token(code)
     if access_token is None:
@@ -22,26 +22,21 @@ def auth_callback(request):
     return HttpResponseRedirect('/random')
 
 
-@logging
-def random(request):
+def random(request, size):
+    if size not in ['thumb', 'small', 'regular', 'full', 'raw']:
+        size = 'regular'
     users = User.objects.all()
     for user in users:
         if not user.expired:
             rtn = get_random_photo(user.access_token)
-            if rtn is None:
-                user.expired = True
-                user.save()
+            if rtn is not None:
+                Photo.create(rtn)
+                return HttpResponseRedirect(rtn['urls'][size])
             else:
-                return response(body=dict(
-                    width=rtn['width'],
-                    height=rtn['height'],
-                    color=rtn['color'],
-                    urls=rtn['urls'],
-                ))
+                return HttpResponseRedirect(Photo.get_random_photo()[size])
     return error_response(Error.NO_LEGAL_USER)
 
 
-# @logging
 def oauth(request):
     oauth_link = get_oauth_link()
     deprint(oauth_link)

@@ -1,15 +1,16 @@
+import random
 from urllib.parse import urlencode
 
 import requests
+import time
 
 from Base.common import deprint
-from Base.decorator import logging
-from Settings.models import Settings
+from Config.models import Config
 
 try:
-    client_id = Settings.objects.get(key='unsplash-client-id').value
-    secret = Settings.objects.get(key='unsplash-secret').value
-    redirect_uri = Settings.objects.get(key='unsplash-redirect-uri').value
+    client_id = Config.objects.get(key='unsplash-client-id').value
+    secret = Config.objects.get(key='unsplash-secret').value
+    redirect_uri = Config.objects.get(key='unsplash-redirect-uri').value
 except:
     client_id = 'YOUR CLIENT ID'
     secret = 'YOUR SECRET'
@@ -22,14 +23,14 @@ token_url = host + '/oauth/token'
 user_profile_url = api_host + '/me'
 random_photo_url = api_host + '/photos/random'
 
+random.seed(time.time())
 
-@logging
+
 def get_oauth_link():
     return '%s?client_id=%s&redirect_uri=%s&response_type=code&scope=public+read_user' \
            % (authorize_url, client_id, redirect_uri)
 
 
-@logging
 def get_access_token(code):
     params = {
         'client_id': client_id,
@@ -50,7 +51,6 @@ def get_access_token(code):
         return None
 
 
-@logging
 def get_user_profile(access_token):
     params = {
         'access_token': access_token,
@@ -70,7 +70,6 @@ def get_user_profile(access_token):
         return None
 
 
-@logging
 def get_random_photo(access_token):
     params = {
         'access_token': access_token,

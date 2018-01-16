@@ -29,6 +29,7 @@ class User(models.Model):
         blank=True,
         null=True,
     )
+    FIELD_LIST = ['user_id', 'username', 'access_token', 'expired', 'email']
 
     @classmethod
     def create(cls, access_token):

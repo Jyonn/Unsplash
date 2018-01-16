@@ -26,10 +26,10 @@ SECRET_KEY = 'eo2ihjti@$e7@--c+5pl_t3&hp(yo(6zua035*omim&pxb*apv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = False
+DEBUG = True
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['unsplash.6-79.cn']
+ALLOWED_HOSTS = ['unsplash.6-79.cn', '*']
 
 # Application definition
 
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'User',
-    'Settings',
+    'Config',
+    'Photo',
 ]
 
 MIDDLEWARE = [
