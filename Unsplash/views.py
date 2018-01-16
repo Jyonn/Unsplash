@@ -23,6 +23,10 @@ def auth_callback(request):
     return HttpResponseRedirect('/random')
 
 
+def random_empty(request):
+    return random(request, 'regular')
+
+
 def random(request, size):
     if size not in ['thumb', 'small', 'regular', 'full', 'raw']:
         size = 'regular'

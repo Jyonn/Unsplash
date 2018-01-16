@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.urls import path
 
-from Unsplash.views import auth_callback, random, oauth
+from Unsplash.views import auth_callback, random, oauth, random_empty
 
 urlpatterns = [
     path('auth/callback', auth_callback),
+    path('random', random_empty),
     path('random/<size>', random),
     path('', oauth),
 ]
