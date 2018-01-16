@@ -5,6 +5,7 @@ from Base.common import deprint
 from Base.decorator import require_get
 from Base.error import Error
 from Base.response import error_response
+from Config.views import clear_old_photo
 from Photo.models import Photo
 from User.models import User
 
@@ -30,6 +31,7 @@ def random(request, size):
         if not user.expired:
             rtn = get_random_photo(user.access_token)
             if rtn is not None:
+                clear_old_photo()
                 Photo.create(rtn)
                 return HttpResponseRedirect(rtn['urls'][size])
             else:
