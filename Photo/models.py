@@ -89,3 +89,6 @@ class Photo(models.Model):
             width=self.width,
             height=self.height,
         )
+
+    def __lt__(self, other):
+        return False
