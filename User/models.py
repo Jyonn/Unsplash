@@ -37,9 +37,9 @@ class User(models.Model):
         rtn = get_user_profile(access_token)
         if rtn is None:
             return Ret(Error.ERROR_GET_PROFILE)
-        user_id = rtn['id']
-        username = rtn['username']
-        email = rtn['email']
+        user_id = rtn.get('id')
+        username = rtn.get('username')
+        email = rtn.get('email')
         try:
             o_user = cls.objects.get(pk=user_id)
             o_user.username = username
