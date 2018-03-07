@@ -29,9 +29,18 @@ def random_empty(request):
     return random(request, 'regular')
 
 
+@require_get([{
+    "value": 'quick',
+    "default": True,
+    "default_value": 0,
+    "process": int,
+}])
 def random(request, size):
+    quick = request.d.quick
     if size not in ['thumb', 'small', 'regular', 'full', 'raw']:
         size = 'regular'
+    if quick:
+        return HttpResponseRedirect(Photo.get_random_photo()[size])
     users = User.objects.all()
     for user in users:
         if not user.expired:
