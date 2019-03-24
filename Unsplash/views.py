@@ -54,7 +54,27 @@ def random(request, size):
     return error_response(Error.NO_LEGAL_USER)
 
 
+@require_get([{
+    "value": 'quick',
+    "default": True,
+    "default_value": 0,
+    "process": int,
+}])
 def random_info(request):
+    quick = request.d.quick
+    if quick:
+        return response(body=Photo.get_random_photo())
+
+    users = User.objects.all()
+    for user in users:
+        if not user.expired:
+            rtn = get_random_photo(user.access_token)
+            if rtn is not None:
+                clear_old_photo()
+                ret = Photo.create(rtn)
+                if ret.error is Error.OK:
+                    return response(body=ret.body.to_dict())
+            break
     return response(body=Photo.get_random_photo())
 
 
