@@ -55,6 +55,19 @@ def random(request, size):
 
 
 @require_get([{
+    "value": "num",
+    "default": True,
+    "default_value": 10,
+    "process": int,
+}])
+def random_multiple(request):
+    num = request.d.num
+    if num > 50:
+        num = 50
+    return response(body=Photo.get_random_photos(num))
+
+
+@require_get([{
     "value": 'quick',
     "default": True,
     "default_value": 0,

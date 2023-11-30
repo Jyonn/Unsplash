@@ -78,6 +78,15 @@ class Photo(models.Model):
         index = random.randint(0, len(photos)-1)
         return photos[index].to_dict()
 
+    @classmethod
+    def get_random_photos(cls, num):
+        photos = cls.objects.all()
+        rtn = []
+        for i in range(num):
+            index = random.randint(0, len(photos)-1)
+            rtn.append(photos[index].to_dict())
+        return rtn
+
     def to_dict(self):
         return dict(
             color=self.color,
