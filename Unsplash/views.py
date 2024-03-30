@@ -62,10 +62,9 @@ class MultipleView(View):
 class SearchView(View):
     @staticmethod
     @Analyse.r(a=[P('color', '颜色')])
-    def search(r, color):
-        print('???')
+    def get(r):
         similar_photo = SimilarPhoto(10)
-        rgb = RGB(color)
+        rgb = RGB(r.d.color)
         for photo in Photo.objects.all():
             c2 = RGB(photo.color)
             dist = RGB.dist(rgb, c2)
