@@ -1,25 +1,27 @@
-from django.db import models
+from SmartDjango import models, E, Hc
 
-from Base.error import Error
-from Base.response import Ret
+from Base.api import UnsplashAPI
+from Config.views import clear_old_photo
+from Photo.models import Photo
+
+
+@E.register(id_processor=E.idp_cls_prefix())
+class UserError:
+    CREATE = E("创建用户失败", hc=Hc.InternalServerError)
+    NO_LEGAL_USER = E("没有合法用户", hc=Hc.ServiceUnavailable)
 
 
 class User(models.Model):
-    L = {
-        'user_id': 20,
-        'username': 20,
-        'access_token': 64,
-    }
     user_id = models.CharField(
-        max_length=L['user_id'],
+        max_length=20,
         primary_key=True,
     )
     username = models.CharField(
-        max_length=L['username'],
+        max_length=20,
         unique=True,
     )
     access_token = models.CharField(
-        max_length=L['access_token'],
+        max_length=64,
     )
     expired = models.BooleanField(
         default=False,
@@ -33,29 +35,40 @@ class User(models.Model):
 
     @classmethod
     def create(cls, access_token):
-        from Base.api import get_user_profile
-        rtn = get_user_profile(access_token)
-        if rtn is None:
-            return Ret(Error.ERROR_GET_PROFILE)
-        user_id = rtn.get('id')
-        username = rtn.get('username')
-        email = rtn.get('email')
+        profile = UnsplashAPI.get_user_profile(access_token)
+        user_id = profile.get('id')
+        username = profile.get('username')
+        email = profile.get('email')
+
         try:
-            o_user = cls.objects.get(pk=user_id)
-            o_user.username = username
-            o_user.email = email
-            o_user.access_token = access_token
-            o_user.expired = False
-        except:
-            o_user = cls(
+            user = cls.objects.get(pk=user_id)
+            user.username = username
+            user.email = email
+            user.access_token = access_token
+            user.expired = False
+        except Exception as _:
+            user = cls(
                 user_id=user_id,
                 username=username,
                 access_token=access_token,
                 email=email,
                 expired=False,
             )
+
         try:
-            o_user.save()
-            return Ret(Error.OK, o_user)
-        except:
-            return Ret(Error.USER_SAVE_ERROR)
+            user.save()
+        except Exception as _:
+            raise UserError.CREATE
+
+        return user
+
+    @classmethod
+    def get_photo(cls):
+        for user in cls.objects.filter(expired=False):
+            photo = UnsplashAPI.get_random_photo(user.access_token)
+            if photo is None:
+                return Photo.get_random_photo()
+            clear_old_photo()
+            photo = Photo.create(photo)  # type: Photo
+            return photo.d()
+        return Photo.get_random_photo()

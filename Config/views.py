@@ -1,12 +1,12 @@
 import datetime
 
-from Config.models import Config
+from Config.models import Config, CI
 from Photo.models import Photo
 
 
 def clear_old_photo():
     try:
-        last_time = Config.objects.get(key='last-clear-time')
+        last_time = Config.get_value_by_key(CI.LAST_CLEAR_TIME)
         last_time_value = float(last_time.value)
     except:
         return

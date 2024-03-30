@@ -1,25 +1,23 @@
 import random
 
-from django.db import models
+from SmartDjango import E, Hc, models
 
-from Base.common import deprint
-from Base.error import Error
-from Base.response import Ret
+
+@E.register(id_processor=E.idp_cls_prefix())
+class PhotoError:
+    NOT_FOUND = E("图片不存在", hc=Hc.NotFound)
+    CREATE = E('创建图片失败', hc=Hc.InternalServerError)
 
 
 class Photo(models.Model):
-    L = {
-        'photo_id': 20,
-        'color': 10,
-    }
     photo_id = models.CharField(
-        max_length=L['photo_id'],
+        max_length=20,
         unique=True,
     )
     width = models.IntegerField()
     height = models.IntegerField()
     color = models.CharField(
-        max_length=L['color'],
+        max_length=10,
     )
     thumb = models.URLField(
         default=None,
@@ -42,62 +40,56 @@ class Photo(models.Model):
     )
 
     @classmethod
-    def create(cls, rtn):
-        ret = cls.get_photo_by_id(rtn['id'])
-        if ret.error is Error.OK:
-            return Ret(Error.OK, ret.body)
+    def create(cls, resp):
         try:
-            o_photo = cls(
-                photo_id=rtn['id'],
-                width=rtn['width'],
-                height=rtn['height'],
-                color=rtn['color'],
-                thumb=rtn['urls']['thumb'],
-                small=rtn['urls']['small'],
-                regular=rtn['urls']['regular'],
-                full=rtn['urls']['full'],
-                raw=rtn['urls']['raw'],
-            )
-            o_photo.save()
-        except:
-            return Ret(Error.ERROR_CREATE_PHOTO)
-        return Ret(Error.OK, o_photo)
+            return cls.get(resp['id'])
+        except PhotoError.NOT_FOUND:
+            pass
+
+        photo = cls(
+            photo_id=resp['id'],
+            width=resp['width'],
+            height=resp['height'],
+            color=resp['color'],
+            thumb=resp['urls']['thumb'],
+            small=resp['urls']['small'],
+            regular=resp['urls']['regular'],
+            full=resp['urls']['full'],
+            raw=resp['urls']['raw'],
+        )
+
+        try:
+            photo.save()
+        except Exception as e:
+            raise PhotoError.CREATE(debug_message=e)
+        return photo
 
     @classmethod
-    def get_photo_by_id(cls, photo_id):
+    def get(cls, photo_id):
         try:
-            o_photo = cls.objects.get(photo_id=photo_id)
-        except Photo.DoesNotExist as err:
-            deprint(str(err))
-            return Ret(Error.PHOTO_NOT_FOUND)
-        return Ret(Error.OK, o_photo)
+            return cls.objects.get(photo_id=photo_id)
+        except Photo.DoesNotExist as _:
+            raise PhotoError.NOT_FOUND
 
     @classmethod
-    def get_random_photo(cls):
+    def get_random_photo(cls, size=None):
         photos = cls.objects.all()
         index = random.randint(0, len(photos)-1)
-        return photos[index].to_dict()
+        photo = photos[index].d()
+        if size:
+            return photo[size]
+        return photo
 
     @classmethod
     def get_random_photos(cls, num):
         photos = cls.objects.all()
-        rtn = []
-        for i in range(num):
-            index = random.randint(0, len(photos)-1)
-            rtn.append(photos[index].to_dict())
-        return rtn
+        index_list = list(range(len(photos)))
+        random.shuffle(index_list)
+        index_list = index_list[:num]
+        return [photos[i].d() for i in index_list]
 
-    def to_dict(self):
-        return dict(
-            color=self.color,
-            thumb=self.thumb,
-            small=self.small,
-            regular=self.regular,
-            full=self.full,
-            raw=self.raw,
-            width=self.width,
-            height=self.height,
-        )
+    def d(self):
+        return self.dictify('color', 'thumb', 'small', 'regular', 'full', 'raw', 'width', 'height')
 
     def __lt__(self, other):
         return False
