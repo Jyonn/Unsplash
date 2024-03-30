@@ -31,7 +31,6 @@ class User(models.Model):
         blank=True,
         null=True,
     )
-    FIELD_LIST = ['user_id', 'username', 'access_token', 'expired', 'email']
 
     @classmethod
     def create(cls, access_token):
@@ -68,7 +67,7 @@ class User(models.Model):
             photo = UnsplashAPI.get_random_photo(user.access_token)
             if photo is None:
                 return Photo.get_random_photo()
-            clear_old_photo()
+            Photo.clear()
             photo = Photo.create(photo)  # type: Photo
             return photo.d()
         return Photo.get_random_photo()
