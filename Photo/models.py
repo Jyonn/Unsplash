@@ -5,8 +5,8 @@ from SmartDjango import E, Hc, models
 
 @E.register(id_processor=E.idp_cls_prefix())
 class PhotoError:
-    NOT_FOUND = E("图片不存在", hc=Hc.NotFound)
     CREATE = E('创建图片失败', hc=Hc.InternalServerError)
+    EXISTS = E('图片已存在', hc=Hc.BadRequest)
 
 
 class Photo(models.Model):
@@ -41,10 +41,7 @@ class Photo(models.Model):
 
     @classmethod
     def create(cls, resp):
-        try:
-            return cls.get(resp['id'])
-        except PhotoError.NOT_FOUND:
-            pass
+        cls.exists(resp['id'])
 
         photo = cls(
             photo_id=resp['id'],
@@ -65,11 +62,12 @@ class Photo(models.Model):
         return photo
 
     @classmethod
-    def get(cls, photo_id):
+    def exists(cls, photo_id):
         try:
-            return cls.objects.get(photo_id=photo_id)
-        except Photo.DoesNotExist as _:
-            raise PhotoError.NOT_FOUND
+            cls.objects.get(photo_id=photo_id)
+        except Photo.DoesNotExist:
+            return
+        raise PhotoError.EXISTS
 
     @classmethod
     def get_random_photo(cls, size=None):
