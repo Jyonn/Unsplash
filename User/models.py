@@ -1,7 +1,6 @@
 from SmartDjango import models, E, Hc
 
 from Base.api import UnsplashAPI
-from Config.views import clear_old_photo
 from Photo.models import Photo
 
 

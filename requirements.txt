@@ -1,3 +1,4 @@
 requests
 django>=2.0
 SmartDjango
+django-cors-headers
