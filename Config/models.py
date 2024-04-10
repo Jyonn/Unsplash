@@ -70,8 +70,8 @@ class ConfigInstance:
     UNSPLASH_CLIENT_ID = 'unsplash-client-id'
     UNSPLASH_SECRET = 'unsplash-secret'
     UNSPLASH_REDIRECT_URI = 'unsplash-redirect-uri'
-    UNSPLASH_HOST = 'https://unsplash.com'
-    UNSPLASH_API_HOST = "https://api.unsplash.com"
+    UNSPLASH_HOST = 'unsplash-host'
+    UNSPLASH_API_HOST = "unsplash-api-host"
     LAST_CLEAR_TIME = 'last-clear-time'
 
 
