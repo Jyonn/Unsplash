@@ -71,3 +71,10 @@ class SearchView(View):
             similar_photo.push(dist, photo)
         search_list = [x[1].d() for x in similar_photo.top()]
         return search_list
+
+
+class CountView(View):
+    @staticmethod
+    @Analyse.r()
+    def get(_):
+        return Photo.objects.count()

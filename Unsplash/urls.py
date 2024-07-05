@@ -24,5 +24,6 @@ urlpatterns = [
     path('random/info', views.InfoView.as_view()),
     path('random/<str:size>', views.RandomView.as_view()),
     path('search/<str:color>', views.SearchView.as_view()),
+    path('count', views.CountView.as_view()),
     path('', views.OAuthView.as_view()),
 ]
