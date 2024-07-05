@@ -44,7 +44,9 @@ class Photo(models.Model):
 
     @classmethod
     def create(cls, resp):
-        cls.exists(resp['id'])
+        photo = cls.get(resp['id'])
+        if photo is not None:
+            return photo
 
         photo = cls(
             photo_id=resp['id'],
@@ -65,12 +67,13 @@ class Photo(models.Model):
         return photo
 
     @classmethod
-    def exists(cls, photo_id):
+    def get(cls, photo_id):
         try:
-            cls.objects.get(photo_id=photo_id)
+            return cls.objects.get(photo_id=photo_id)
         except Photo.DoesNotExist:
-            return
-        raise PhotoError.EXISTS
+            pass
+        # raise PhotoError.EXISTS
+        return
 
     @classmethod
     def get_random_photo(cls, size=None):
