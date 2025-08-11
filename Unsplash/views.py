@@ -17,7 +17,7 @@ class OAuthView(View):
 class CallbackView(View):
     @analyse.query('code')
     def get(self, request):
-        code = request.d.code
+        code = request.query.code
         access_token = UnsplashAPI.get_access_token(code)
         User.create(access_token)
         return HttpResponseRedirect('/random')
