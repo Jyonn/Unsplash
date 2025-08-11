@@ -1,26 +1,24 @@
-from SmartDjango import models, E, Hc
+from diq import Dictify
+from django.db import models
 
 from Base.api import UnsplashAPI
 from Photo.models import Photo
+from User.validators import UserValidator, UserErrors
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class UserError:
-    CREATE = E("创建用户失败", hc=Hc.InternalServerError)
-    NO_LEGAL_USER = E("没有合法用户", hc=Hc.ServiceUnavailable)
+class User(models.Model, Dictify):
+    vldt = UserValidator
 
-
-class User(models.Model):
     user_id = models.CharField(
-        max_length=20,
+        max_length=vldt.MAX_USER_ID_LENGTH,
         primary_key=True,
     )
     username = models.CharField(
-        max_length=20,
+        max_length=vldt.MAX_USERNAME_LENGTH,
         unique=True,
     )
     access_token = models.CharField(
-        max_length=64,
+        max_length=vldt.MAX_ACCESS_TOKEN_LENGTH,
     )
     expired = models.BooleanField(
         default=False,
@@ -56,7 +54,7 @@ class User(models.Model):
         try:
             user.save()
         except Exception as _:
-            raise UserError.CREATE
+            raise UserErrors.CREATE
 
         return user
 

@@ -1,4 +1,8 @@
 requests
-django>=2.0
-SmartDjango
+django
+smartdjango
+django-cors-headers
+pymysql
+gunicorn
+diq
 django-cors-headers

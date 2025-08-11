@@ -1,26 +1,24 @@
 import datetime
 import random
 
-from SmartDjango import E, Hc, models
+from diq import Dictify
+from django.db import models
 
 from Config.models import Config, CI
+from Photo.validators import PhotoValidator, PhotoErrors
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class PhotoError:
-    CREATE = E('创建图片失败', hc=Hc.InternalServerError)
-    EXISTS = E('图片已存在', hc=Hc.BadRequest)
+class Photo(models.Model, Dictify):
+    vldt = PhotoValidator
 
-
-class Photo(models.Model):
     photo_id = models.CharField(
-        max_length=20,
+        max_length=vldt.MAX_PHOTO_ID_LENGTH,
         unique=True,
     )
     width = models.IntegerField()
     height = models.IntegerField()
     color = models.CharField(
-        max_length=10,
+        max_length=vldt.MAX_COLOR_LENGTH,
     )
     thumb = models.URLField(
         default=None,
@@ -63,7 +61,7 @@ class Photo(models.Model):
         try:
             photo.save()
         except Exception as e:
-            raise PhotoError.CREATE(debug_message=e)
+            raise PhotoErrors.CREATE(details=e)
         return photo
 
     @classmethod
@@ -73,7 +71,7 @@ class Photo(models.Model):
         except Photo.DoesNotExist:
             pass
         # raise PhotoError.EXISTS
-        return
+        return None
 
     @classmethod
     def get_random_photo(cls, size=None):

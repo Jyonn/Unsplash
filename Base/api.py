@@ -4,16 +4,16 @@ from urllib.parse import urlencode
 import requests
 import time
 
-from SmartDjango import E, Hc
+from smartdjango import Error, Code
 
 from Config.models import Config, CI
 from Unsplash.settings import PROJ_INIT
 
 
-@E.register(id_processor=E.idp_cls_prefix())
-class AuthError:
-    FAIL_CODE = E("获取授权码失败", hc=Hc.Unauthorized)
-    GET_PROFILE = E("获取用户信息失败", hc=Hc.BadRequest)
+@Error.register
+class AuthErrors:
+    FAIL_CODE = Error("获取授权码失败", code=Code.Unauthorized)
+    GET_PROFILE = Error("获取用户信息失败", code=Code.BadRequest)
 
 
 if PROJ_INIT:
@@ -56,8 +56,8 @@ class UnsplashAPI:
             resp = requests.post(UNSPLASH_TOKEN_URI, json=params)
             if resp.status_code == 200:
                 return resp.json()['access_token']
-        except:
-            raise AuthError.FAIL_CODE
+        except Exception as _:
+            raise AuthErrors.FAIL_CODE
 
     @staticmethod
     def get_user_profile(access_token):
@@ -69,12 +69,12 @@ class UnsplashAPI:
 
         try:
             resp = requests.get(UNSPLASH_PROFILE_URI, params=params_encoded, headers=headers)
-        except:
-            raise AuthError.GET_PROFILE
+        except Exception as _:
+            raise AuthErrors.GET_PROFILE
 
         if resp.status_code == 200:
             return resp.json()
-        raise AuthError.GET_PROFILE
+        raise AuthErrors.GET_PROFILE
 
     @staticmethod
     def get_random_photo(access_token):
@@ -89,5 +89,7 @@ class UnsplashAPI:
         except Exception as _:
             return None
 
-        if resp.status_code == 200:
+        if resp.status_code == requests.codes.ok:
             return resp.json()
+
+        return None

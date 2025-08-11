@@ -1,7 +1,6 @@
-from SmartDjango import Analyse
-from SmartDjango.p import P
 from django.http import HttpResponseRedirect
 from django.views import View
+from smartdjango import analyse, Validator
 
 from Base.api import UNSPLASH_OAUTH_URI, UnsplashAPI
 from Base.rgb import RGB
@@ -11,28 +10,25 @@ from User.models import User
 
 
 class OAuthView(View):
-    @staticmethod
-    @Analyse.r()
-    def get(_):
+    def get(self, request):
         return HttpResponseRedirect(UNSPLASH_OAUTH_URI)
 
 
 class CallbackView(View):
-    @staticmethod
-    @Analyse.r(q=['code'])
-    def get(r):
-        code = r.d.code
+    @analyse.query('code')
+    def get(self, request):
+        code = request.d.code
         access_token = UnsplashAPI.get_access_token(code)
         User.create(access_token)
         return HttpResponseRedirect('/random')
 
 
 class RandomView(View):
-    @staticmethod
-    @Analyse.r(q=[P('quick', '快速模式').set_default(0).process(int)], a=[P('size').set_default(None)])
-    def get(r):
-        quick = r.d.quick
-        size = r.d.size
+    @analyse.query(Validator('quick', '快速模式').default(0).to(int).null())
+    @analyse.argument(Validator('size').default(None).null())
+    def get(self, request, **kwargs):
+        quick = request.query.quick
+        size = request.argument.size
         if size not in ['thumb', 'small', 'regular', 'full', 'raw']:
             size = 'regular'
 
@@ -42,29 +38,26 @@ class RandomView(View):
 
 
 class InfoView(View):
-    @staticmethod
-    @Analyse.r(q=[P('quick', '快速模式').set_default(0).process(int)])
-    def get(r):
-        quick = r.d.quick
+    @analyse.query(Validator('quick', '快速模式').default(0).to(int).null())
+    def get(self, request):
+        quick = request.query.quick
         return Photo.get_random_photo() if quick else User.get_photo()
 
 
 class MultipleView(View):
-    @staticmethod
-    @Analyse.r(q=[P('num', '数量').set_default(10).process(int)])
-    def get(r):
-        num = r.d.num
+    @analyse.query(Validator('num', '数量').default(10).to(int).null())
+    def get(self, request):
+        num = request.query.num
         if num > 50:
             num = 50
         return Photo.get_random_photos(num)
 
 
 class SearchView(View):
-    @staticmethod
-    @Analyse.r(a=[P('color', '颜色')])
-    def get(r):
+    @analyse.argument(Validator('color', '颜色'))
+    def get(self, request, **kwargs):
         similar_photo = SimilarPhoto(10)
-        rgb = RGB(r.d.color)
+        rgb = RGB(request.argument.color)
         for photo in Photo.objects.all():
             c2 = RGB(photo.color)
             dist = RGB.dist(rgb, c2)
@@ -74,7 +67,5 @@ class SearchView(View):
 
 
 class CountView(View):
-    @staticmethod
-    @Analyse.r()
-    def get(_):
+    def get(self, request):
         return Photo.objects.count()
